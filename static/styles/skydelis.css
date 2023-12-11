@@ -1,0 +1,178 @@
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #452b15;
+  }
+
+  main {
+    display: flex;
+    margin: 20px auto;
+  }
+  
+  section {
+    margin-bottom: 20px;
+  }
+
+  h2 {
+    color: #e48f45;
+  }
+
+  p {
+    color: #e48f45;
+  }
+
+  button {
+    background-color: #4285f4;
+    color: #fff;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #1c4aa5;
+  }
+
+  form {
+    display: grid;
+    grid-gap: 10px;
+  }
+
+  label {
+    font-weight: bold;
+  }
+  
+  html body div i {
+    width: max-content;
+    text-align: left;
+    display: compact;
+  }
+
+  input[type='text'],
+  input[type='email'],
+  input[type='password'],
+  input[type='number'],
+  input[type='submit'],
+  input[type='checkbox'] {
+    padding: 8px;
+    box-sizing: border-box;
+    margin-top: 5px;
+  }
+
+  .settings-menu {
+    display: none;
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .show-menu {
+    display: block;
+    transform: translateY(0);
+  }
+
+  body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #452b15;
+  }
+
+  header {
+    background-color: #e48f45;
+    color: #fff;
+    text-align: left;
+    padding: 0.01ch;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  header h1 {
+      padding-left: 20px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+
+  .header-right a {
+    text-align: center;
+    display: block;
+  }
+
+  .header-right a i {
+    text-align: center;
+    display: block;
+    height: auto;
+  }
+
+  .header-right i:nth-child(2) {
+    display: none;
+  }
+
+  .header-right a:hover i:nth-child(1) {
+    display: none;
+  }
+
+  .header-right a:hover i:nth-child(2) {
+    display: block;
+  }
+
+  .logout-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: max-content;
+    margin-right: 3rem;
+  }
+
+  .temperature, .controls, .settings {
+    margin: 0 50px; /* Add margin between sections if needed */
+}
+
+  .temperature {
+    flex: 2;
+    max-width: 800px;
+  }
+
+  .controls,
+  .settings {
+      flex: 1; /* Distribute remaining space equally between controls and settings */
+  }
+
+  .range-tool {
+    padding-top: 1.5ch;
+  }
+
+  /* Apply styles to the container for styling purposes */
+  .textarea-container {
+    width: 100%; /* Adjust the width as needed */
+    margin: 20px auto;
+}
+
+/* Style the textarea to make it scrollable */
+textarea {
+    width: 100%;
+    height: 300px; /* Set the desired height of the textarea */
+    padding: 10px;
+    box-sizing: border-box;
+    resize: none;
+    overflow-y: scroll; /* Enable vertical scrolling */
+  }
+
+
+.settings-menu {
+  padding-top: 1.5ch;
+  width: 100%;
+  
+  }
+  .settings-menu label {
+    color: #e48f45;
+  }
+
+  .input-container {
+    display: flex;
+    align-items: center;
+}

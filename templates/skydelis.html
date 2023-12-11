@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PiBrewPal Dashboard</title>
+    
+    <link rel="stylesheet" href="{{url_for('static', filename = 'styles/skydelis.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename = 'styles/fontawesome/css/all.min.css')}}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bokeh/3.3.2/bokeh.min.js"></script> 
+</head>
+<body>
+    <header>
+        <h1>PiBrewPal</h1>
+        <div class="header-right">
+            <a href="{{ url_for('logout') }}" class="logout-link">
+                <div style="text-align: center;">
+                    <i class="fa-solid fa-door-closed fa-2x"></i>
+                    <i class="fa-solid fa-door-open fa-2x"></i>
+                </div>
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <section class = "temperature">
+            <h2>Temperature Graph</h2>
+            <div class = "temperature-graph">
+                {{ div[0] | safe }}
+                {{ script | safe}}
+
+            </div>
+
+            <div class = "range-tool">
+                {{ div[1] | safe}}
+                {{ script2 | safe}}
+
+            </div>
+        </section>
+
+        <section class = "controls">
+            <h2>Controls</h2>
+            <p>Current Temperature: 36&deg;C</p>
+            <button onclick="measureTemperature()">Measure Temperature Now</button>
+            <button onclick="mixLiquid()">Mix Liquid</button>
+
+            <div class = "textarea-container">
+                <p>LOG Output</p>
+                <textarea placeholder="BLALBALBLA" readonly id = "logTextArea"></textarea>
+            </div>
+        </section>
+
+        <section class = "settings">
+            <h2>Settings</h2>
+            <button id="settingsToggle" onclick="toggleSettings()">Toggle Settings</button>
+            <div id="settingsMenu" class="settings-menu">
+                <form action="/settings" method="POST">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" value="test" required>
+                    <br>
+
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" value="test" required>
+                    <br>
+
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                    <br>
+
+                    <div class="input-container">
+                        <label for="periodic_temperature">Periodic Temperature Measurements:</label>
+                        <input type="checkbox" id="periodic_temperature" name="periodic_temperature">
+                    </div>
+                    <br>
+
+                    <div class="input-container">
+                        <label for="measurement_interval">Measurement Interval (seconds):</label>
+                        <input type="number" id="measurement_interval" name="measurement_interval" value="60" min="1">
+                    </div>
+                    <br>
+
+                    <div class="input-container">
+                        <label for="periodic_mixing">Periodic Mixing:</label>
+                        <input type="checkbox" id="periodic_mixing" name="periodic_mixing">
+                    </div>
+                    <br>
+
+                    <div class="input-container">
+                        <label for="mixing_interval">Mixing Interval (seconds):</label>
+                        <input type="number" id="mixing_interval" name="mixing_interval" value="120" min="1">
+                    </div>
+                    <br>
+
+                    <button id = "save-settings">Save Settings</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- Include any necessary JavaScript or external libraries here -->
+    <script>
+        
+        function measureTemperature() {
+            var today = new Date();
+            var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+            var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+            var dateTime = date+' '+time;
+            // Add logic to measure temperature and update UI
+            var logTextArea = document.getElementById("logTextArea");
+            logTextArea.value += `Temperature measured! Time: ${dateTime}\n---------------------------\n`;
+            // Automatically scroll to the bottom
+            logTextArea.scrollTop = logTextArea.scrollHeight;
+        }
+
+        function mixLiquid() {
+            var today = new Date();
+            var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+            var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+            var dateTime = date+' '+time;
+            // Add logic to mix liquid and update UI
+            var logTextArea = document.getElementById("logTextArea");
+            logTextArea.value += `Liquid mixed! Time: ${dateTime}\n---------------------------\n`;
+            // Automatically scroll to the bottom
+            logTextArea.scrollTop = logTextArea.scrollHeight;
+        }
+
+        function toggleSettings() {
+            var settingsMenu = document.getElementById("settingsMenu");
+            settingsMenu.classList.toggle("show-menu");
+        }
+    </script>
+</body>
+</html>
