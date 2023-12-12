@@ -40,7 +40,7 @@
 
         <section class = "controls">
             <h2>Controls</h2>
-            <p>Current Temperature: 36&deg;C</p>
+            <p>Current Temperature: <span id="current-temp">{{ last_known_temp }}</span>&deg;C</p>
             <button onclick="measureTemperature()">Measure Temperature Now</button>
             <button onclick="mixLiquid()">Mix Liquid</button>
 
@@ -99,17 +99,32 @@
 
     <!-- Include any necessary JavaScript or external libraries here -->
     <script>
-        
-        function measureTemperature() {
+        function measureTemperature() {            
             var today = new Date();
             var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
             var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
             var dateTime = date+' '+time;
-            // Add logic to measure temperature and update UI
-            var logTextArea = document.getElementById("logTextArea");
-            logTextArea.value += `Temperature measured! Time: ${dateTime}\n---------------------------\n`;
-            // Automatically scroll to the bottom
-            logTextArea.scrollTop = logTextArea.scrollHeight;
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', '/api/get-temperature');
+            xhr.responseType = 'json';
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    const temperatureData = xhr.response;
+                    const currentTemp = document.getElementById('current-temp');
+                    currentTemp.textContent = `${temperatureData}`;
+
+                    // Add logic to measure temperature and update UI
+                    var logTextArea = document.getElementById("logTextArea");
+                    logTextArea.value += `Temperature measured! Time: ${dateTime} Temperature: ${temperatureData}\n---------------------------\n`;
+                    // Automatically scroll to the bottom
+                    logTextArea.scrollTop = logTextArea.scrollHeight;
+                } else {
+                    console.error('Error fetching temperature data:', xhr.statusText);
+                }
+            };
+            xhr.send();
+        
         }
 
         function mixLiquid() {

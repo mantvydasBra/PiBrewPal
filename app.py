@@ -1,8 +1,9 @@
 import os
 import figures
+from temperature import read_temp
 from dotenv import load_dotenv
 from bokeh.embed import components
-from flask import Flask, render_template, redirect, url_for, request
+from flask import Flask, render_template, redirect, url_for, request, jsonify
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
 load_dotenv()
@@ -15,6 +16,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 script, div = None, None
+last_known_temp = 0
 
 
 class User(UserMixin):
@@ -74,7 +76,8 @@ def skydelis():
     return render_template(
         'skydelis.html', 
         script = script, 
-        div = [div[0], div[1]]
+        div = [div[0], div[1]],
+        last_known_temp = last_known_temp
     )
 
 @app.route('/logout')
@@ -85,6 +88,17 @@ def logout():
 @login_manager.unauthorized_handler
 def unauthorized_callback():
     return redirect(url_for('login'))
+
+
+############### API PART #######################
+# Define an API endpoint
+@app.route('/api/get-temperature', methods=['GET'])
+def get_temperature():
+    global last_known_temp
+    current_temp = read_temp()
+    last_known_temp = current_temp
+
+    return jsonify(current_temp)
 
 if __name__ == '__main__':
     app.run(debug=True, host = "0.0.0.0")
