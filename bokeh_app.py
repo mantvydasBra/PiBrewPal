@@ -1,14 +1,15 @@
 from db import loadTemperature
 from bokeh.layouts import column
 from bokeh.plotting import figure, curdoc
-from bokeh.models import DatetimeTickFormatter, HoverTool, WheelZoomTool, RangeTool, ColumnDataSource
+from bokeh.models import DatetimeTickFormatter, HoverTool, WheelZoomTool, RangeTool, ColumnDataSource, Button
+import pandas as pd
 
 # Load temperature from database
 df = loadTemperature()
 
+# print(df)
 # Create a Bokeh ColumnDataSource
 source = ColumnDataSource(df)
-
 
 # Create a Bokeh figure
 p = figure(
@@ -103,19 +104,27 @@ select.ygrid.grid_line_color = None
 select.add_tools(range_tool)
 
 # # Define a callback to update the plot data
-# def update():
-#     new_data = dict(x=[random.random()], y=[random.random()])
-#     source.stream(new_data)
+def newTemp(data):
+
+    print("received new data from app! ", data)
+    current_index =  source.data['index'][-1]
+    measurement = pd.DataFrame(data.items(), columns = ['MeasurementTime', 'MeasuredValue'])
+    measurement['MeasurementTime'] = pd.to_datetime(measurement['MeasurementTime'])
+
+    source.stream(measurement)
+    print("Source has been added!")
+    source.data['index'][current_index + 1] = current_index + 1 
+    print(source.data)
+    # show(p, select)
+    return
 
 # # Add a periodic callback to update the plot every second
 # curdoc().add_periodic_callback(update, 1000)
 
-
 layout = column(p, select)
-# code = "<h1>loading finished</h1>"
-# callback = CustomJS(args = dict(), code = code) 
-# Add the plot to the current document
-# curdoc().add_root(spinner)
+
 curdoc().add_root(layout)
 
+# print('--------------')
+# print(new_data.data)
 # curdoc().js_on_event("document_ready")

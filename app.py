@@ -7,6 +7,8 @@ from temperature import read_temp
 from bokeh.embed import server_document
 from flask import Flask, render_template, redirect, url_for, request, jsonify
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+import pandas as pd
+from bokeh_app import newTemp
 
 load_dotenv()
 
@@ -88,13 +90,16 @@ def unauthorized_callback():
 # Define an API endpoint
 @app.route('/api/get-temperature', methods=['GET'])
 def get_temperature():
-    global last_known_temp, script, div
+    global last_known_temp
     MeasurementTime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     current_temp = read_temp()
 
     last_known_temp = current_temp
 
-    writeTemp(MeasurementTime, current_temp)
+    data = {MeasurementTime: current_temp}
+
+    print("Sending data from app: ", data)
+    newTemp(data)
 
     return jsonify(current_temp)
 

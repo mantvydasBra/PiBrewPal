@@ -39,7 +39,3 @@ def read_temp():
 
         return temp_c
 
-# Continuously read and print temperature every second
-# while True:
-# 	print(f"Current temperature: {read_temp()}C")	
-# 	time.sleep(2)
