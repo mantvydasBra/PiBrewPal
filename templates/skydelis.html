@@ -6,6 +6,7 @@
     <title>PiBrewPal Dashboard</title>
     
     <link rel="stylesheet" href="{{url_for('static', filename = 'styles/skydelis.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename = 'styles/loader.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename = 'styles/fontawesome/css/all.min.css')}}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bokeh/3.3.2/bokeh.min.js"></script> 
 </head>
@@ -23,22 +24,21 @@
     </header>
 
     <main>
-        <section class = "temperature">
+        <section class="temperature">
             <h2>Temperature Graph</h2>
-            <div class = "temperature-graph">
-                {{ div[0] | safe }}
+            <!-- Loading screen container -->
+            <div class="temperature-graph">
                 {{ script | safe}}
-
-            </div>
-
-            <div class = "range-tool">
-                {{ div[1] | safe}}
-                {{ script2 | safe}}
-
+                <!-- <ul class="spinner">
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                </ul> -->
             </div>
         </section>
 
-        <section class = "controls">
+        <section class="controls">
             <h2>Controls</h2>
             <p>Current Temperature: <span id="current-temp">{{ last_known_temp }}</span>&deg;C</p>
             <button onclick="measureTemperature()">Measure Temperature Now</button>
@@ -50,7 +50,7 @@
             </div>
         </section>
 
-        <section class = "settings">
+        <section class="settings">
             <h2>Settings</h2>
             <button id="settingsToggle" onclick="toggleSettings()">Toggle Settings</button>
             <div id="settingsMenu" class="settings-menu">

@@ -1,8 +1,10 @@
 import os
 import figures
-from temperature import read_temp
+from db import writeTemp
+from datetime import datetime
 from dotenv import load_dotenv
-from bokeh.embed import components
+from temperature import read_temp
+from bokeh.embed import server_document
 from flask import Flask, render_template, redirect, url_for, request, jsonify
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
@@ -63,22 +65,14 @@ def login():
 @app.route('/skydelis')
 @login_required
 def skydelis():
-    # Setting variables to global, because otherwise function doesn't see vartiables at the top
-    global script, div
-
-    # Making a check to see if components are already generated, to not access same object again and get an error
-    if script is None and div is None:
-    # Function to calculate the plot
-        p, select = figures.drawLinePlot()
-    # Save components for displaying to the website
-        script, div = components((p, select))
+    script = server_document('http://localhost:5006/bokeh_app')
 
     return render_template(
         'skydelis.html', 
         script = script, 
-        div = [div[0], div[1]],
-        last_known_temp = last_known_temp
+        last_known_temp = last_known_temp,
     )
+    
 
 @app.route('/logout')
 def logout():
@@ -94,11 +88,16 @@ def unauthorized_callback():
 # Define an API endpoint
 @app.route('/api/get-temperature', methods=['GET'])
 def get_temperature():
-    global last_known_temp
+    global last_known_temp, script, div
+    MeasurementTime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     current_temp = read_temp()
+
     last_known_temp = current_temp
 
+    writeTemp(MeasurementTime, current_temp)
+
     return jsonify(current_temp)
+
 
 if __name__ == '__main__':
     app.run(debug=True, host = "0.0.0.0")

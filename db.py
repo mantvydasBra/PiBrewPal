@@ -1,7 +1,9 @@
 import os
 import sys
 import mariadb
+import pandas as pd
 from dotenv import load_dotenv
+from sqlalchemy import create_engine
 
 load_dotenv()
 
@@ -95,6 +97,32 @@ def populateDefaults(conn, ip_address):
         print("Insertion success!")
         conn.commit()
         cur.close()
+    except mariadb.Error as e:
+        print(f"Error: {e}")
+    return
+
+def loadTemperature():
+
+    engine = create_engine(f"mariadb+mariadbconnector://{USERNAME}:{PASSWORD}@127.0.0.1:3306/{db_name}")
+
+    # Create a SQL query to select the desired columns
+    query = "SELECT MeasurementTime, MeasuredValue FROM Temperature"
+
+    # Execute the query and store the result in a DataFrame
+    df = pd.read_sql_query(query, engine)
+
+    # Close the database connection
+    engine.dispose()
+
+    return df
+
+def writeTemp(MeasurementTime, MeasuredValue):
+    conn = dbConnect()
+    cur = conn.cursor()
+
+    try:
+        cur.execute("INSERT INTO Temperature (SensorId, MeasurementTime, MeasuredValue) VALUES (?, ?, ?)", 
+                    ('28-03199779c8dc', MeasurementTime, MeasuredValue))
     except mariadb.Error as e:
         print(f"Error: {e}")
     return
