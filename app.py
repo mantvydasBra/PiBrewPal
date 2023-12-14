@@ -1,20 +1,22 @@
 import os
-import figures
 from db import writeTemp
 from datetime import datetime
 from dotenv import load_dotenv
 from temperature import read_temp
-from bokeh.embed import server_document
+from bokeh.embed import server_document, server_session
+from bokeh.client import pull_session
 from flask import Flask, render_template, redirect, url_for, request, jsonify
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 import pandas as pd
-from bokeh_app import newTemp
+# from bokeh_app import newTemp
 
 load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
 
+# app_url = 'http://localhost:5006/bokeh_app'
+# mysession = pull_session(url=app_url)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -67,13 +69,16 @@ def login():
 @app.route('/skydelis')
 @login_required
 def skydelis():
-    script = server_document('http://localhost:5006/bokeh_app')
+    app_url = 'http://localhost:5006/'
+    with pull_session(url=app_url) as mysession:
+    # script = server_document('http://localhost:5006/bokeh_app')
+        script = server_session(session_id=mysession.id, url = app_url)
 
-    return render_template(
-        'skydelis.html', 
-        script = script, 
-        last_known_temp = last_known_temp,
-    )
+        return render_template(
+            'skydelis.html', 
+            script = script, 
+            last_known_temp = last_known_temp,
+        )
     
 
 @app.route('/logout')
@@ -99,10 +104,10 @@ def get_temperature():
     data = {MeasurementTime: current_temp}
 
     print("Sending data from app: ", data)
-    newTemp(data)
+    # newTemp(data)
 
     return jsonify(current_temp)
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host = "0.0.0.0")
+    app.run(debug=True, host = "0.0.0.0", port = 5000)
