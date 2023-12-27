@@ -46,38 +46,38 @@
             <div id="settingsMenu" class="settings-menu">
                 <form action="/settings" method="POST">
                     <label for="name">Name:</label>
-                    <input type="text" id="name" name="name" value="test" required>
+                    <input type="text" id="name" name="name" value={{username}} required>
                     <br>
 
                     <label for="email">Email:</label>
-                    <input type="email" id="email" name="email" value="test" required>
+                    <input type="email" id="email" name="email" value={{email}} required>
                     <br>
 
                     <label for="password">Password:</label>
-                    <input type="password" id="password" name="password" required>
+                    <input type="password" id="password" name="password">
                     <br>
 
-                    <div class="input-container">
-                        <label for="periodic_temperature">Periodic Temperature Measurements:</label>
-                        <input type="checkbox" id="periodic_temperature" name="periodic_temperature">
-                    </div>
-                    <br>
 
                     <div class="input-container">
                         <label for="measurement_interval">Measurement Interval (seconds):</label>
-                        <input type="number" id="measurement_interval" name="measurement_interval" value="60" min="1">
-                    </div>
-                    <br>
-
-                    <div class="input-container">
-                        <label for="periodic_mixing">Periodic Mixing:</label>
-                        <input type="checkbox" id="periodic_mixing" name="periodic_mixing">
+                        <input type="number" id="measurement_interval" name="measurement_interval" value="60" min="0">
                     </div>
                     <br>
 
                     <div class="input-container">
                         <label for="mixing_interval">Mixing Interval (seconds):</label>
-                        <input type="number" id="mixing_interval" name="mixing_interval" value="120" min="1">
+                        <input type="number" id="mixing_interval" name="mixing_interval" value="120" min="0">
+                    </div>
+                    <br>
+
+                    <div class="input-container">
+                        <label for="send_email">Tempereture when to send emails. 0 is Off</label>
+                        <div class="inputs">
+                            <label for="temperature_value1">Min:</label>
+                            <input type="number" id="temperature_value1" name="temperature_value1" value="18.5" min="0">
+                            <label for="temperature_value2">Max:</label>
+                            <input type="number" id="temperature_value2" name="temperature_value2" value="22.5" min="0">
+                        </div>
                     </div>
                     <br>
 

@@ -1,14 +1,16 @@
-import os
-from db import writeTemp, checkUserNumer, insertUser, getUser, getUserByID
-from datetime import datetime
-from dotenv import load_dotenv
-from temperature import read_temp
-from bokeh.embed import server_document, server_session, components
-from bokeh.client import pull_session
 from flask import Flask, render_template, redirect, url_for, request, jsonify
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from logger import writeLog, getLog
+
+import os
+from datetime import datetime
+from dotenv import load_dotenv
+
+from bokeh.embed import server_document
+
+from temperature import read_temp
 from loginHandler import checkReq
+from logger import writeLog, getLog
+from db import writeTemp, checkUserNumer, insertUser, getUser, getUserByID
 
 load_dotenv()
 
@@ -26,8 +28,9 @@ first_boot = checkUserNumer()
 
 
 class User(UserMixin):
-    def __init__(self, id, email, password):
+    def __init__(self, id, username, email, password):
             self.id = id
+            self.username = username
             self.email = email
             self.password = password
     
@@ -35,7 +38,7 @@ class User(UserMixin):
     def get(user_id):
         user_info = getUserByID(user_id)
         if user_info:
-            return User(id=user_info[0], email=user_info[1], password=user_info[2])
+            return User(id=user_info[0], username=user_info[1], email=user_info[2], password=user_info[3])
         return None
 
 
@@ -106,14 +109,15 @@ def skydelis():
 
     logData = getLog()
 
-    # with pull_session(session_id=None, url='http://localhost:5006/bokeh_app') as session:
-    #     script = server_session(session_id=session.id, url = "http://localhost:5006/bokeh_app")
+    print(current_user.username)
 
     return render_template(
         'skydelis.html', 
         script = script, 
         last_known_temp = last_known_temp,
-        logData = logData if logData else ""
+        logData = logData if logData else "",
+        email = current_user.email,
+        username = current_user.username
     )
 
 

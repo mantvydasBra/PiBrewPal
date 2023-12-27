@@ -60,6 +60,7 @@ body {
     margin-top: 5px;
   }
 
+
   .settings-menu {
     display: none;
     transition: transform 0.3s ease-in-out;
@@ -175,4 +176,20 @@ textarea {
   .input-container {
     display: flex;
     align-items: center;
+}
+
+.input-container .inputs {
+  /* Display the inputs next to each other */
+  display: flex;
+  align-items: center;
+
+}
+.inputs input {
+  /* Make the input boxes smaller and add some margin */
+  width: 80px;  /* Adjust as needed */
+  margin-right: 10px;
+}
+.inputs label {
+  margin-right: 5px; /* Spacing between label and input */
+  font-size: 15px;
 }

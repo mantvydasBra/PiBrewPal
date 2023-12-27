@@ -185,7 +185,7 @@ def getUserByID(user_id):
     cur = conn.cursor()
 
     try:
-        cur.execute("SELECT id, email, password FROM User WHERE id = %s", (user_id,))
+        cur.execute("SELECT id, userid, email, password FROM User WHERE id = %s", (user_id,))
         return cur.fetchone()
     except Exception as e:
         print(f"An error occurred: {e}")
