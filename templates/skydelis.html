@@ -34,11 +34,9 @@
             <h2>Controls</h2>
             <p>Current Temperature: <span id="current-temp">{{ last_known_temp }}</span>&deg;C</p>
 
-            <!-- <button onclick="measureTemperature()">Measure Temperature Now</button> -->
-
             <div class = "textarea-container">
                 <p>LOG Output</p>
-                <textarea placeholder="BLALBALBLA" readonly id = "logTextArea"></textarea>
+                <textarea placeholder="Event log" readonly id = "logTextArea">{{ logData }}</textarea>
             </div>
         </section>
 

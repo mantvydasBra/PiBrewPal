@@ -2,30 +2,31 @@
 <html lang="en" >
 <head>
   <meta charset="UTF-8">
-  <title>PiBrewPal Login</title>
+  <title>PiBrewPal Register</title>
   <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Rubik:400,700'>
   <link rel="stylesheet" href="{{url_for('static', filename = 'styles/login.css')}}">
 
 </head>
 <body>
 <div class="login-form">
-  <form action="{{ url_for('login') }}" method="post">
-    <h1>Login</h1>
+  <form action="{{ url_for('register') }}" method="post">
+    <h1>Register</h1>
     <div class="content">
       <div class="input-field">
-        <input type="email" name = "email" placeholder="Email" autocomplete="nope">
+        <input type="username" name = "username" placeholder="username" autocomplete="nope" maxlength="20" required>
       </div>
       <div class="input-field">
-        <input type="password" name = "password" placeholder="Password" autocomplete="new-password">
+        <input type="email" name = "email" placeholder="Email" autocomplete="nope" maxlength="50" required>
       </div>
-      <a href="#" class="link">Forgot Your Password?</a>
+      <div class="input-field">
+        <input type="password" name = "password" placeholder="Password" autocomplete="new-password" maxlength="50" required>
+      </div>
     </div>
         {% if error %}
             <p style="color: red;">{{ error }}</p>
         {% endif %}
     <div class="action">
-      <!-- <button type="submit">Register</button> -->
-      <button type="submit" class = "btn btn-bubble">Sign in</button>
+      <button type="submit">Register</button>
     </div>
   </form>
 </div>
