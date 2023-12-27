@@ -123,6 +123,9 @@ def writeTemp(MeasurementTime, MeasuredValue):
     try:
         cur.execute("INSERT INTO Temperature (SensorId, MeasurementTime, MeasuredValue) VALUES (?, ?, ?)", 
                     ('28-03199779c8dc', MeasurementTime, MeasuredValue))
+        print("New Temperature data inserted!")
+        conn.commit()
+        cur.close()
     except mariadb.Error as e:
         print(f"Error: {e}")
     return
