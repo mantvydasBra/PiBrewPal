@@ -15,6 +15,7 @@ db_name = os.environ.get("db_name")
 PORT = os.environ.get("db_port")
 SALT = bytes(os.environ.get("SALT"), 'utf-8')
 
+# Connection handler
 def dbConnect():
     # Connect to MariaDB Platform
     try:
@@ -33,6 +34,7 @@ def dbConnect():
     
     return conn
 
+# Function to create tables if they don't exist
 def createTables(conn):
     try:
         cur = conn.cursor()
@@ -90,6 +92,7 @@ def createTables(conn):
     cur.close()
     return
 
+# Function to populate the database with data
 def populateDefaults(conn, ip_address):
     cur = conn.cursor()
     try:
@@ -105,6 +108,7 @@ def populateDefaults(conn, ip_address):
     cur.close()
     return
 
+# Function to load temperatures to graph
 def loadTemperature():
 
     engine = create_engine(f"mariadb+mariadbconnector://{USERNAME}:{PASSWORD}@127.0.0.1:{PORT}/{db_name}")
@@ -120,6 +124,7 @@ def loadTemperature():
 
     return df
 
+# Function to write temperature readings
 def writeTemp(MeasurementTime, MeasuredValue):
     conn = dbConnect()
     cur = conn.cursor()
@@ -134,6 +139,7 @@ def writeTemp(MeasurementTime, MeasuredValue):
     cur.close()
     return
 
+# Function to insert a new user into database
 def insertUser(userID, email, passw):
     conn = dbConnect()
     cur = conn.cursor()
@@ -152,6 +158,7 @@ def insertUser(userID, email, passw):
     conn.close()
     return
 
+# Function to return user object
 def getUser(email, passw):
     conn = dbConnect()
     cur = conn.cursor()
@@ -162,8 +169,6 @@ def getUser(email, passw):
          
         if user:
             user_id, hashed_pass = user
-
-            entered_hashed_pass = bcrypt.hashpw(passw.encode(), SALT)
 
              # Check if the provided password matches the hashed password
             if bcrypt.checkpw(passw.encode(), hashed_pass.encode('utf-8')):
@@ -182,7 +187,8 @@ def getUser(email, passw):
     cur.close()
     conn.close()
     return
-    
+
+# Function to get user by id, used for sessions    
 def getUserByID(user_id):
     conn = dbConnect()
     cur = conn.cursor()
@@ -195,7 +201,8 @@ def getUserByID(user_id):
     finally:
         cur.close()
         conn.close()
-
+        
+# Function to get config values
 def getConfig():
     conn = dbConnect()
     cur = conn.cursor()
@@ -210,7 +217,8 @@ def getConfig():
         conn.close()
             
 
-
+# Function to see if a user exists
+# This is used to check if program is being ran the first time
 def checkUserNumber():
     conn = dbConnect()
     cur = conn.cursor()
@@ -228,7 +236,8 @@ def checkUserNumber():
     cur.close()
     conn.close()
     return
-    
+
+# Function to get frequency when to measure temperature 
 def getTempFreq():
     conn = dbConnect()
     cur = conn.cursor()
@@ -243,6 +252,7 @@ def getTempFreq():
     conn.close()
     return  
 
+# Function to get minimum and maximum temperature boundaries which are used to send email alerts
 def getMinMaxEmail():
     conn = dbConnect()
     cur = conn.cursor()
@@ -311,7 +321,7 @@ def main():
     createTables(conn)
 
     # Populate with defaults, will fix later
-    populateDefaults(conn, ip_address)
+    # populateDefaults(conn, ip_address)
 
     conn.close()
 

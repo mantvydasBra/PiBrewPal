@@ -6,10 +6,6 @@ import pandas as pd
 import requests
 from time import sleep
 import json
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # Load temperature from database
 df = loadTemperature()
@@ -108,7 +104,9 @@ def update_periodic_callback():
     global current_callback_id, last_temp
 
     measurement_interval = int(getTempFreq()[0])
+    # Get interval and check if it's not zero
     if measurement_interval == 0:
+        # Remove periodic callback if interval is 0
         if current_callback_id is not None:
             curdoc().remove_periodic_callback(current_callback_id)
             current_callback_id = None
@@ -124,24 +122,31 @@ def update_periodic_callback():
 
 def newTemp():
 
+    # sleep necessary for flask to have time to update the values
     sleep(1)
+    # Get new temp if last temp was 0 (to dodge errors)
     if last_temp != 0:
         url = "http://192.168.32.34:5000/api/get-temperature"
         x = requests.get(url)
         data = json.loads(x.text)
 
+    # Get temperature readings
     url = "http://192.168.32.34:5000/api/set-temperature"
     x = requests.get(url)
     data = json.loads(x.text)
     print("received new data from app! ", data)
+    # Get current index, bokeh bug when adding new data the index doesnt update
     current_index = source.data['index'][-1]
+    # Change variables to pandas
     measurement = pd.DataFrame(data.items(), columns = ['MeasurementTime', 'MeasuredValue'])
     measurement['MeasurementTime'] = pd.to_datetime(measurement['MeasurementTime'])
 
+    # Stream the new update
     source.stream(measurement)
     print("Source has been added!")
     source.data['index'][current_index + 1] = current_index + 1 
     ################################################
+    # This part of code changes the graph's x_range to help user notice new data points
     last_time = measurement['MeasurementTime'].iloc[-1]
 
     # Set new x-range to focus on the last few hours around the new data
@@ -151,6 +156,7 @@ def newTemp():
         p.x_range = Range1d(start=p.x_range.start, end=p.x_range.end)
 
 
+# Implement button stylesheet to be similar to the ones in Flask
 stylesheet = InlineStyleSheet(css="""
 .bk-btn-default {
     color: #fff;
@@ -165,6 +171,7 @@ stylesheet = InlineStyleSheet(css="""
   }
 """)
 
+# Implement button. Flask's buttons didn't work for new data addition
 button = Button(label="Measure Temperature Now", button_type="default", stylesheets=[stylesheet], tags = ['Vienintelis-mygtukas'])
 callback = CustomJS(code="measureTemperature();")
 button.js_on_click(callback)
@@ -178,7 +185,7 @@ spacer1 = Spacer(height=30)
 
 layout2 = column(layout, spacer1, button)
 
-
+# Set root and and periodic callback of 5s which will check for database updates
 curdoc().add_root(layout2)
 curdoc().add_periodic_callback(update_periodic_callback, 5000)
 

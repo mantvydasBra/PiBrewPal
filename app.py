@@ -18,17 +18,18 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
 
-
+# Login manager definition for flask sessions
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+# Global variables
 script, div = None, None
 last_known_temp = read_temp()
 temp_data = {None}
 first_boot = checkUserNumber()
 minEmail, maxEmail = getMinMaxEmail()
 
-
+# User object for sessions
 class User(UserMixin):
     def __init__(self, id, username, email, password):
             self.id = id
@@ -52,17 +53,21 @@ def load_user(user_id):
 def main():
     return redirect(url_for('skydelis'))
 
+# Register endpoint
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     global first_boot
+    # Run only if it's first boot
     if first_boot:
         if request.method == 'POST':
                 username = request.form.get('username') 
                 email = request.form.get('email')
                 password = request.form.get('password')
 
+                # Check if inputs are correct
                 message = checkReq(username, email, password)
 
+                # If there are errors, render them, else - insert user
                 if message:
                     return render_template('register.html', error=message)
                 else:
@@ -77,8 +82,9 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    print(first_boot)
+    # Only run if not first boot
     if not first_boot:
+        # If there is a session
         if current_user.is_authenticated:
             return redirect(url_for('skydelis'))
 
@@ -90,6 +96,7 @@ def login():
 
             if message:
                 return render_template('register.html', error=message)
+            # If there are no errors, get user id from db and get user object by id
             else:
                 user_id = getUser(email, password)
                 if user_id:
@@ -98,8 +105,8 @@ def login():
                         login_user(user)
                         return redirect(url_for('skydelis'))
                     
-    
             return render_template('login.html', error='Invalid email or password')
+        # Load default login template
         return render_template('login.html')
     else:
         return redirect(url_for('register'))
@@ -107,13 +114,14 @@ def login():
 @app.route('/skydelis')
 @login_required
 def skydelis():
-    global refresh
+    # Get graph from bokeh server
     script = server_document("http://localhost:5006/bokeh_app")
 
+    # Load config and log data
     logData = getLog()
     config = getConfig()
 
-
+    # Render template with all the variables
     return render_template(
         'skydelis.html', 
         script = script, 
@@ -143,23 +151,25 @@ def unauthorized_callback():
 @app.route('/api/get-temperature', methods=['GET'])
 def get_temperature():
     global last_known_temp, temp_data
+    # Get current time 
     MeasurementTime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # Read current temperature from the sensor
     current_temp = read_temp()
-
-
+    # Set current temperature to present on the page
     last_known_temp = current_temp
     
+    # Log the action
     writeLog(MeasurementTime, current_temp)
 
+    # Prepare data for sending, save it in database and send email alert if necessary
     temp_data = {MeasurementTime: current_temp}
-
     writeTemp(MeasurementTime, current_temp)
-
     emailHandler(current_temp, MeasurementTime)
 
     return jsonify(current_temp)
 
 def emailHandler(current_temp, mTime):
+    # Check if both variables are zero
     if minEmail == 0.0 and maxEmail == 0.0:
         return
     if maxEmail == 0.0:
@@ -181,9 +191,11 @@ def emailHandler(current_temp, mTime):
 @app.route('/api/set-temperature', methods=['GET'])
 def set_temperature():
     global temp_data
+    # Helper for bokeh graph
     print(temp_data)
     return jsonify(temp_data)
 
+# Function to check if string is a number
 def is_number(value):
     try:
         float(value)  # Try converting the string to a float
@@ -193,11 +205,12 @@ def is_number(value):
 
 @app.route('/settings', methods=['POST']) 
 def settings():
-    global refresh, maxEmail, minEmail
+    global maxEmail, minEmail
+    # Get inputs from request
     setting_values = request.form.to_dict()
 
     password = setting_values['password']
-    
+    # Set password to None to ignore changing it and dodge sql errors
     if setting_values['password'] == '':
         password = None
 
