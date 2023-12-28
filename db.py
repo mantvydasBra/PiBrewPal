@@ -52,10 +52,12 @@ def createTables(conn):
                     IpAddress VARCHAR(255) not null,
                     ModuleList TEXT,
                     DataBaseAddr VARCHAR(255) not null,
-                    TempFreq FLOAT not null,
-                    MixFreq FLOAT not null,
+                    TempFreq INT not null,
+                    MixFreq INT not null,
                     LogFilePath VARCHAR(255) not null,
-                    WebPort INT not null
+                    WebPort INT not null,
+                    MailTempMin FLOAT not null,
+                    MailTempMax FLOAT not null
         );
         """)
         print("Configuration table created!")
@@ -89,11 +91,11 @@ def createTables(conn):
     return
 
 def populateDefaults(conn, ip_address):
+    cur = conn.cursor()
     try:
-        cur = conn.cursor()
         # Insert default configuration
-        cur.execute("INSERT INTO Configuration (IpAddress, ModuleList, DataBaseAddr, TempFreq, MixFreq, LogFilePath, WebPort) VALUES (?, ?, ?, ?, ?, ?, ?)", 
-                    (ip_address, "['84848-asd', '99536-ddsad']", '127.0.0.1', 30, 30, '/var/log/pibrewpal.log', 5000))
+        cur.execute("INSERT INTO Configuration (IpAddress, ModuleList, DataBaseAddr, TempFreq, MixFreq, LogFilePath, WebPort, MailTempMin, MailTempMax) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+                    (ip_address, "['84848-asd', '99536-ddsad']", '127.0.0.1', 0, 0, '/var/log/pibrewpal.log', 5000, 0, 0))
         
         print("Insertion success!")
         conn.commit()
@@ -137,7 +139,6 @@ def insertUser(userID, email, passw):
     cur = conn.cursor()
 
     hashed_password = bcrypt.hashpw(passw.encode(), SALT)
-    print(userID, email, passw)
 
     try:
         cur.execute("INSERT INTO User (UserID, Email, Password) VALUES (?, ?, ?)", 
@@ -148,6 +149,7 @@ def insertUser(userID, email, passw):
         print(f"Error: {e}")
     
     cur.close()
+    conn.close()
     return
 
 def getUser(email, passw):
@@ -178,6 +180,7 @@ def getUser(email, passw):
         print(f"Error: {e}")
 
     cur.close()
+    conn.close()
     return
     
 def getUserByID(user_id):
@@ -192,13 +195,23 @@ def getUserByID(user_id):
     finally:
         cur.close()
         conn.close()
+
+def getConfig():
+    conn = dbConnect()
+    cur = conn.cursor()
+
+    try:
+        cur.execute("SELECT TempFreq, MixFreq, MailTempMin, MailTempMax FROM Configuration")
+        return cur.fetchone()
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        cur.close()
+        conn.close()
             
 
 
-
-
-
-def checkUserNumer():
+def checkUserNumber():
     conn = dbConnect()
     cur = conn.cursor()
 
@@ -213,9 +226,77 @@ def checkUserNumer():
         print(f"Error: {e}")
 
     cur.close()
+    conn.close()
     return
     
+def getTempFreq():
+    conn = dbConnect()
+    cur = conn.cursor()
 
+    try:
+        cur.execute("SELECT TempFreq FROM Configuration")
+        return cur.fetchone()
+    except mariadb.Error as e:
+        print(f"Error: {e}")
+
+    cur.close()
+    conn.close()
+    return  
+
+def getMinMaxEmail():
+    conn = dbConnect()
+    cur = conn.cursor()
+
+    try:
+        cur.execute("SELECT MailTempMin, MailTempMax FROM Configuration")
+        return cur.fetchone()
+    except mariadb.Error as e:
+        print(f"Error: {e}")
+
+    cur.close()
+    conn.close()
+    return
+
+def setConfig(values: list):
+    conn = dbConnect()
+    cur = conn.cursor()
+    
+    try:
+        # Begin a transaction
+        conn.begin()
+
+        # Update the User table if password is provided
+        if values.get('password') != '':
+            hashed_password = bcrypt.hashpw(values['password'].encode(), SALT)
+            cur.execute("UPDATE User SET password=%s", (hashed_password,))
+
+        # Check if the following values are not empty
+        if values.get('email') is not None and values.get('name') is not None:
+            if values.get('email') is not '' and values.get('name') is not '':
+                cur.execute("UPDATE User SET email=%s, UserID=%s", (values['email'], values['name']))
+
+        # Update the Configuration table
+        if values.get('measurement_interval') is not None and values.get('mixing_interval') is not None:
+            if values.get('measurement_interval') is not '' and values.get('mixing_interval') is not '':
+                cur.execute("UPDATE Configuration SET TempFreq=%s, MixFreq=%s",
+                        (values['measurement_interval'], values['mixing_interval']))
+                                
+        if values.get('temperature_min') is not None and values.get('temperature_max') is not None:
+            if values.get('temperature_min') is not '' and values.get('temperature_max') is not '':
+                cur.execute("UPDATE Configuration SET MailTempMin=%s, MailTempMax=%s",
+                            (values['temperature_min'], values['temperature_max']))
+
+        # Commit the transaction
+        conn.commit()
+
+    except mariadb.Error as e:
+        # Rollback the transaction on error
+        conn.rollback()
+        print(f"Error: {e}")
+    finally:
+        # Close the cursor and connection
+        cur.close()
+        conn.close()
 
 
 def main():
@@ -230,7 +311,7 @@ def main():
     createTables(conn)
 
     # Populate with defaults, will fix later
-    # populateDefaults(cur, ip_address)
+    populateDefaults(conn, ip_address)
 
     conn.close()
 

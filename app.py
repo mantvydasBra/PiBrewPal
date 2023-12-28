@@ -7,10 +7,11 @@ from dotenv import load_dotenv
 
 from bokeh.embed import server_document
 
+from emailHandler import send_email
 from temperature import read_temp
 from loginHandler import checkReq
 from logger import writeLog, getLog
-from db import writeTemp, checkUserNumer, insertUser, getUser, getUserByID
+from db import writeTemp, checkUserNumber, insertUser, getUser, getUserByID, getConfig, getMinMaxEmail, setConfig
 
 load_dotenv()
 
@@ -24,7 +25,8 @@ login_manager.init_app(app)
 script, div = None, None
 last_known_temp = read_temp()
 temp_data = {None}
-first_boot = checkUserNumer()
+first_boot = checkUserNumber()
+minEmail, maxEmail = getMinMaxEmail()
 
 
 class User(UserMixin):
@@ -105,11 +107,12 @@ def login():
 @app.route('/skydelis')
 @login_required
 def skydelis():
+    global refresh
     script = server_document("http://localhost:5006/bokeh_app")
 
     logData = getLog()
+    config = getConfig()
 
-    print(current_user.username)
 
     return render_template(
         'skydelis.html', 
@@ -117,7 +120,11 @@ def skydelis():
         last_known_temp = last_known_temp,
         logData = logData if logData else "",
         email = current_user.email,
-        username = current_user.username
+        username = current_user.username,
+        tempFreq = config[0],
+        mixFreq = config[1],
+        MailTempMin = '0' if config[2] == 0 else config[2],
+        MailTempMax = '0' if config[3] == 0 else config[3]    
     )
 
 
@@ -139,20 +146,81 @@ def get_temperature():
     MeasurementTime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     current_temp = read_temp()
 
+
     last_known_temp = current_temp
     
     writeLog(MeasurementTime, current_temp)
 
     temp_data = {MeasurementTime: current_temp}
+
     writeTemp(MeasurementTime, current_temp)
 
+    emailHandler(current_temp, MeasurementTime)
+
     return jsonify(current_temp)
+
+def emailHandler(current_temp, mTime):
+    if minEmail == 0.0 and maxEmail == 0.0:
+        return
+    if maxEmail == 0.0:
+        if current_temp < minEmail:
+            #send email
+            send_email(current_temp, minEmail, mTime, "under")
+            return
+        else:
+            return
+    else:
+        if current_temp > maxEmail:
+            #send email
+            send_email(current_temp, maxEmail, mTime, "over")
+            return
+        else:
+            return
+    
 
 @app.route('/api/set-temperature', methods=['GET'])
 def set_temperature():
     global temp_data
     print(temp_data)
     return jsonify(temp_data)
+
+def is_number(value):
+    try:
+        float(value)  # Try converting the string to a float
+        return True
+    except ValueError:
+        return False
+
+@app.route('/settings', methods=['POST']) 
+def settings():
+    global refresh, maxEmail, minEmail
+    setting_values = request.form.to_dict()
+
+    password = setting_values['password']
+    
+    if setting_values['password'] == '':
+        password = None
+
+    message = checkReq(setting_values['email'], password, setting_values['name'])
+    if not message:
+        values_to_check = [
+            setting_values['measurement_interval'], 
+            setting_values['mixing_interval'], 
+            setting_values['temperature_min'], 
+            setting_values['temperature_max']
+        ]
+        # Check if the values, which should be numbers are really numbers
+        if all(is_number(value) for value in values_to_check):
+            setConfig(setting_values)
+            minEmail = float(setting_values['temperature_min'])
+            maxEmail = float(setting_values['temperature_max'])
+        else:
+            return "A value was not a number!", 500
+    else:
+        return message, 500
+
+    return "OK", 200
+
 
 if __name__ == '__main__':
     app.run(debug=True, host = "0.0.0.0", port = 5000)

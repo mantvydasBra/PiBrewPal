@@ -9,14 +9,14 @@ def checkReq(email, password, username=None):
     if not email.strip():
         # Handle the case where email is empty or contains only whitespace
         return "Email is empty."
-
-    if not password.strip():
-        # Handle the case where password is empty or contains only whitespace
-        return "Password is empty."
-    
     if len(email.strip()) > 50:
         return "Email is too long, keep it under 50 symbols."
-    if len(password.strip()) > 50:
-        return "Email is too long, keep it under 50 symbols."
+
+    if password != None:
+        if not password.strip():
+            # Handle the case where password is empty or contains only whitespace
+            return "Password is empty."
+        if len(password.strip()) > 50:
+            return "Email is too long, keep it under 50 symbols."
     
     return

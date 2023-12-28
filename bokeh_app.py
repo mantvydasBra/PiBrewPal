@@ -1,4 +1,4 @@
-from db import loadTemperature
+from db import loadTemperature, getTempFreq
 from bokeh.layouts import column, row, layout
 from bokeh.plotting import figure, curdoc
 from bokeh.models import DatetimeTickFormatter, HoverTool, WheelZoomTool, RangeTool, ColumnDataSource, Button, InlineStyleSheet, Spacer, CustomJS, Range1d
@@ -6,7 +6,10 @@ import pandas as pd
 import requests
 from time import sleep
 import json
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
 # Load temperature from database
 df = loadTemperature()
@@ -14,6 +17,10 @@ df = loadTemperature()
 # print(df)
 # Create a Bokeh ColumnDataSource
 source = ColumnDataSource(df)
+
+# Global variable to hold the callback ID
+current_callback_id = None
+last_temp = 0
 
 
 # Create a Bokeh figure
@@ -97,10 +104,32 @@ select.line(
 select.ygrid.grid_line_color = None
 select.add_tools(range_tool)
 
+def update_periodic_callback():
+    global current_callback_id, last_temp
+
+    measurement_interval = int(getTempFreq()[0])
+    if measurement_interval == 0:
+        if current_callback_id is not None:
+            curdoc().remove_periodic_callback(current_callback_id)
+            current_callback_id = None
+            print("removed callback")
+        return
+    else:
+        if measurement_interval != last_temp:
+            last_temp = measurement_interval
+            print("added callback")
+            # Add a new periodic callback with the new interval
+            current_callback_id = curdoc().add_periodic_callback(newTemp, measurement_interval * 1000)  # Convert seconds to milliseconds
+
 
 def newTemp():
 
     sleep(1)
+    if last_temp != 0:
+        url = "http://192.168.32.34:5000/api/get-temperature"
+        x = requests.get(url)
+        data = json.loads(x.text)
+
     url = "http://192.168.32.34:5000/api/set-temperature"
     x = requests.get(url)
     data = json.loads(x.text)
@@ -151,9 +180,5 @@ layout2 = column(layout, spacer1, button)
 
 
 curdoc().add_root(layout2)
-# newTemp({'2023-12-14 21:31:44': 20.75})
-# button.js_on_click(newTemp({'2023-12-14 21:31:44': 20.75})
+curdoc().add_periodic_callback(update_periodic_callback, 5000)
 
-# print('--------------')
-# print(new_data.data)
-# curdoc().js_on_event("document_ready")
