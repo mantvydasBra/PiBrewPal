@@ -74,9 +74,9 @@
                         <label for="send_email">Tempereture when to send emails. 0 is Off</label>
                         <div class="inputs">
                             <label for="temperature_min">Min:</label>
-                            <input type="number" id="temperature_min" name="temperature_min" value={{MailTempMin}} min="0">
+                            <input type="number" step=".1" id="temperature_min" name="temperature_min" value={{MailTempMin}} min="0.0">
                             <label for="temperature_max">Max:</label>
-                            <input type="number" id="temperature_max" name="temperature_max" value={{MailTempMax}} min="0">
+                            <input type="number" step=".1" id="temperature_max" name="temperature_max" value={{MailTempMax}} min="0.0">
                         </div>
                     </div>
                     <br>

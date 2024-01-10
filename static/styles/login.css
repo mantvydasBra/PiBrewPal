@@ -104,7 +104,7 @@
   .login-form .action button:hover {
     background: #d8d8d8;
   }
-  .login-form .action button:nth-child(2) {
+  .login-form .action button {
     background: #E48F45;
     color: #fff;
     border-bottom-left-radius: 0;
@@ -112,8 +112,8 @@
 
   }
 
-  .login-form button:nth-child(2):hover,
-  .login-form button:nth-child(2):focus {
+  .login-form .action button:hover,
+  .login-form .action button:focus {
     animation: bubbles 2s forwards ease-in-out;
     /* bubbles 1s forwards ease-out infinite; */
     background: radial-gradient(circle at center, rgba(0,0,0,0) 30%, #eeeeff 60%, #eeeeff 65%, rgba(0,0,0,0) 70%) 105% 90% / 0.59em 0.59em,

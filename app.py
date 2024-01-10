@@ -28,6 +28,7 @@ last_known_temp = read_temp()
 temp_data = {None}
 first_boot = checkUserNumber()
 minEmail, maxEmail = getMinMaxEmail()
+lastMeasurementTime = None
 
 # User object for sessions
 class User(UserMixin):
@@ -71,7 +72,7 @@ def register():
                 if message:
                     return render_template('register.html', error=message)
                 else:
-                    insertUser(email, password, username)
+                    insertUser(username, email, password)
                     first_boot = False
                     return redirect(url_for('login'))
                 
@@ -168,25 +169,56 @@ def get_temperature():
 
     return jsonify(current_temp)
 
-def emailHandler(current_temp, mTime):
-    # Check if both variables are zero
-    if minEmail == 0.0 and maxEmail == 0.0:
-        return
-    if maxEmail == 0.0:
-        if current_temp < minEmail:
-            #send email
-            send_email(current_temp, minEmail, mTime, "under")
-            return
+# Helper function for email sender to fix mail spam
+def checkTime(mTime):
+    global lastMeasurementTime
+
+    if lastMeasurementTime is not None:
+        # Convert time from string to datetime
+        t1 = datetime.strptime(lastMeasurementTime, "%Y-%m-%d %H:%M:%S")
+        t2 = datetime.strptime(mTime, "%Y-%m-%d %H:%M:%S")
+
+        # Get time difference
+        delta = t2 - t1
+
+        # If there is a 30s time difference return True, otherwise return False
+        if delta.total_seconds() >= 30:
+            # Store the new time
+            lastMeasurementTime = mTime
+            return True
         else:
-            return
+            return False
     else:
-        if current_temp > maxEmail:
-            #send email
-            send_email(current_temp, maxEmail, mTime, "over")
-            return
-        else:
-            return
+        # Return True, since it is first time the temperature is measured
+        lastMeasurementTime = mTime
+        return True
+
+
+def emailHandler(current_temp, mTime):
     
+    time_passed = checkTime(mTime)
+
+    # Check if enough time has passed to not spam email
+    if time_passed:
+        # Check if both variables are zero
+        if minEmail == 0.0 and maxEmail == 0.0:
+            return
+        if maxEmail == 0.0:
+            if current_temp < minEmail:
+                #send email
+                send_email(current_temp, minEmail, mTime, "under")
+                return
+            else:
+                return
+        else:
+            if current_temp > maxEmail:
+                #send email
+                send_email(current_temp, maxEmail, mTime, "over")
+                return
+            else:
+                return
+    else:
+        return
 
 @app.route('/api/set-temperature', methods=['GET'])
 def set_temperature():

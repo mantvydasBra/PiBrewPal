@@ -201,6 +201,19 @@ def getUserByID(user_id):
     finally:
         cur.close()
         conn.close()
+
+def getEmail():
+    conn = dbConnect()
+    cur = conn.cursor()
+
+    try:
+        cur.execute("SELECT email FROM User")
+        return cur.fetchone()
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        cur.close()
+        conn.close()
         
 # Function to get config values
 def getConfig():
@@ -282,17 +295,17 @@ def setConfig(values: list):
 
         # Check if the following values are not empty
         if values.get('email') is not None and values.get('name') is not None:
-            if values.get('email') is not '' and values.get('name') is not '':
+            if values.get('email') != '' and values.get('name') != '':
                 cur.execute("UPDATE User SET email=%s, UserID=%s", (values['email'], values['name']))
 
         # Update the Configuration table
         if values.get('measurement_interval') is not None and values.get('mixing_interval') is not None:
-            if values.get('measurement_interval') is not '' and values.get('mixing_interval') is not '':
+            if values.get('measurement_interval') != '' and values.get('mixing_interval') != '':
                 cur.execute("UPDATE Configuration SET TempFreq=%s, MixFreq=%s",
                         (values['measurement_interval'], values['mixing_interval']))
                                 
         if values.get('temperature_min') is not None and values.get('temperature_max') is not None:
-            if values.get('temperature_min') is not '' and values.get('temperature_max') is not '':
+            if values.get('temperature_min') != '' and values.get('temperature_max') != '':
                 cur.execute("UPDATE Configuration SET MailTempMin=%s, MailTempMax=%s",
                             (values['temperature_min'], values['temperature_max']))
 

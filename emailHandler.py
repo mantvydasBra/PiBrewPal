@@ -1,7 +1,8 @@
+import os
 import smtplib
+from db import getEmail
 from email.mime.text import MIMEText
 from dotenv import load_dotenv
-import os
 
 # Load environment
 load_dotenv()
@@ -14,7 +15,10 @@ def send_email(value, treshold, measurementTime, overOrUnder):
    subject = "PiBrewPal Temperature Alert!"
    body = f"Hello, PiBrewPal wants to inform you about temperature which went {overOrUnder} the value of {treshold}°C:\n{measurementTime} | {value}°C"
    sender = "pibrewpal@gmail.com"
-   recipients = ["mantaikas16@gmail.com"]
+
+   # Get user email from database
+   recipient_email = getEmail()[0]
+   recipients = [recipient_email]
 
    # Set email variables
    msg = MIMEText(body)

@@ -114,6 +114,11 @@ def update_periodic_callback():
         return
     else:
         if measurement_interval != last_temp:
+            # Fix if user enters another number before entering 0. There was a bug where two callbacks can run
+            if current_callback_id is not None:
+                curdoc().remove_periodic_callback(current_callback_id)
+                current_callback_id = None
+                print("removed callback")
             last_temp = measurement_interval
             print("added callback")
             # Add a new periodic callback with the new interval
@@ -126,12 +131,12 @@ def newTemp():
     sleep(1)
     # Get new temp if last temp was 0 (to dodge errors)
     if last_temp != 0:
-        url = "http://192.168.32.34:5000/api/get-temperature"
+        url = "http://localhost:5000/api/get-temperature"
         x = requests.get(url)
         data = json.loads(x.text)
 
     # Get temperature readings
-    url = "http://192.168.32.34:5000/api/set-temperature"
+    url = "http://localhost:5000/api/set-temperature"
     x = requests.get(url)
     data = json.loads(x.text)
     print("received new data from app! ", data)
